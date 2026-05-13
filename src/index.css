@@ -1,0 +1,4 @@
+/* index.css - 전역 기본 리셋만 */
+*, *::before, *::after {
+  box-sizing: border-box;
+}

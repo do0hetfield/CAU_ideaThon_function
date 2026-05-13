@@ -1,0 +1,281 @@
+/* ─── 색상 시스템 (피그마 추출) ─────────────────────────────── */
+:root {
+  --color-primary:    #fe501d;   /* 강조 오렌지 */
+  --color-black:      #000000;
+  --color-text:       #72767b;   /* 일반 텍스트 */
+  --color-muted:      #ababab;   /* 비활성 텍스트 */
+  --color-bg:         #f0f0f0;   /* 페이지 배경 */
+  --color-card:       #ffffff;   /* 카드 배경 */
+  --color-border:     #e0e0e0;   /* 선 */
+  --color-header-border: #acacac; /* 헤더 하단 선 (rgb 67%) */
+
+  --font-head2:  600 20px/24px 'Inter', sans-serif;
+  --font-body1:  500 16px/1.4 'Inter', sans-serif;
+  --font-body2:  400 14px/1.4 'Inter', sans-serif;
+
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── 리셋 ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #1e1e1e;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+/* ─── 앱 컨테이너 ────────────────────────────────────────────── */
+#root {
+  width: 390px;
+  min-height: 844px;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (max-width: 390px) {
+  #root { width: 100%; min-height: 100dvh; }
+}
+
+/* ─── 헤더 (y=0, h=92) ───────────────────────────────────────── */
+.app-header {
+  width: 390px;
+  height: 92px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-header-border);
+  display: flex;
+  align-items: flex-end;        /* 하단 정렬 (paddingTop 48) */
+  padding: 0 16px 20px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.header-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.header-title {
+  font: var(--font-head2);
+  color: var(--color-black);
+  flex: 1;
+}
+
+/* ─── 검색창 (y=92, h=84) ────────────────────────────────────── */
+.search-bar-wrapper {
+  background: var(--color-bg);
+  padding: 16px 20px;
+  flex-shrink: 0;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 52px;
+  gap: 8px;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font: var(--font-body1);
+  color: var(--color-muted);
+  background: transparent;
+}
+
+.search-input::placeholder { color: var(--color-muted); }
+
+.search-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+/* ─── 탭 메뉴 (y=175, h=88) ──────────────────────────────────── */
+.tab-menu {
+  background: #ffffff;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 12px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+}
+
+.tab-divider {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: var(--color-border);
+}
+
+.tab-count {
+  font: var(--font-body1);
+  color: var(--color-primary);
+}
+
+.tab-label {
+  font: var(--font-body2);
+  color: var(--color-black);
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.tab-item.active .tab-label {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ─── 메인 콘텐츠 ─────────────────────────────────────────────── */
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: none;
+}
+.app-content::-webkit-scrollbar { display: none; }
+
+/* ─── 지원내역 카드 ──────────────────────────────────────────── */
+.app-card {
+  width: 390px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.meta-date,
+.meta-method {
+  font: var(--font-body1);
+  color: var(--color-muted);
+}
+
+.meta-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--color-muted);
+}
+
+/* 태그 + 마감 행 */
+.app-card__tags {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+  font: var(--font-body2);
+}
+
+.deadline {
+  font: var(--font-body1);
+  color: var(--color-muted);
+}
+
+/* 회사 정보 */
+.app-card__company {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.company-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.company-name {
+  font: var(--font-body2);
+  color: var(--color-text);
+}
+
+.app-card__jobtitle {
+  font: var(--font-body1);
+  color: var(--color-text);
+}
+
+/* 직종 태그 */
+.app-card__jobtags {
+  display: flex;
+  gap: 8px;
+}
+
+/* 하단 행 */
+.app-card__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.risk-score {
+  font: var(--font-body1);
+  color: var(--color-text);
+}
+
+.guide-btn {
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid;
+  border-radius: 8px;
+  font: var(--font-body2);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.guide-btn:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
