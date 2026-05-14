@@ -1,5 +1,88 @@
 /* ─── GuidePage 전용 스타일 ───────────────────────────────────── */
 
+/* ─── AI 로딩 오버레이 ─────────────────────────────────────────── */
+.ai-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: fade-in 0.2s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.ai-loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 32px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(28, 92, 255, 0.12);
+  border: 1px solid rgba(28, 92, 255, 0.1);
+  min-width: 240px;
+}
+
+.ai-loading-gauge {
+  width: 100%;
+  height: 4px;
+  background: #e8eeff;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.ai-loading-gauge__bar {
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, #1c5cff, #60a5fa);
+  border-radius: 99px;
+  animation: gauge-sweep 1s ease-in-out forwards;
+}
+
+@keyframes gauge-sweep {
+  0%   { width: 0%; }
+  60%  { width: 75%; }
+  100% { width: 100%; }
+}
+
+.ai-loading-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-loading-circle {
+  transform-origin: center;
+  animation: spin-circle 0.9s linear infinite;
+}
+
+@keyframes spin-circle {
+  to { transform: rotate(360deg); }
+}
+
+.ai-loading-text {
+  font: 600 15px/1.4 'Inter', sans-serif;
+  color: #18191a;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.ai-loading-sub {
+  font: 400 12px/1.4 'Inter', sans-serif;
+  color: #ababab;
+  margin: 0;
+}
+
+
+
 #guide-page {
   width: 100%;
   height: 100%;
@@ -285,14 +368,24 @@
 }
 
 /* ─── 미리보기 수정 표시 ────────────────────────────────────── */
-/* 수정된 텍스트 삽입 표시 - 연한 열린노랑+파란 테두리 */
+/* 미리보기 하이라이트: 연한 노란색 배경 */
 .preview-replaced {
-  background: #e8f5e9; /* 연한 연두색 */
-  color: #1b5e20;      /* 진한 녹색 텍스트 */
-  font-weight: 700;
-  border-bottom: 1.5px solid #4caf50;
+  background: #fff9c4;
+  color: #7c5c00;
+  font-weight: 600;
+  border-bottom: 1.5px solid #f9a825;
   padding: 0 1px;
   border-radius: 1px;
+}
+
+/* 반영된 조항 강조: 파란색 + 굵은 폰트 */
+.applied-emphasis {
+  color: #1c5cff;
+  font-weight: 700;
+  font-style: normal;
+  background: #eef2ff;
+  border-radius: 2px;
+  padding: 0 1px;
 }
 
 /* ─── PDF 뷰어 스타일 ────────────────────────────────────────── */

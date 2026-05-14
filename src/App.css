@@ -23,6 +23,12 @@
 /* ─── 리셋 ───────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+@keyframes gauge-sweep {
+  0%   { width: 0%; }
+  60%  { width: 75%; }
+  100% { width: 100%; }
+}
+
 body {
   background: #1e1e1e;
   display: flex;

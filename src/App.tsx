@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './App.css'
+import './GuidePage.css'
 
 // ─── 아이콘 컴포넌트 (SVG 인라인) ───────────────────────────────
 const ArrowLeftIcon = () => (
@@ -151,14 +152,45 @@ const ApplicationCard = ({ app, onGuide }: { app: Application; onGuide: () => vo
   </div>
 )
 
+// ─── AI 로딩 오버레이 (GuidePage.css 클래스 공용) ────────────────
+const AILoadingOverlay = ({ visible, showSub = false }: { visible: boolean; showSub?: boolean }) => {
+  if (!visible) return null
+  return (
+    <div className="ai-loading-overlay">
+      <div className="ai-loading-box">
+        <div className="ai-loading-gauge">
+          <div className="ai-loading-gauge__bar" />
+        </div>
+        <div className="ai-loading-icon">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <circle cx="18" cy="18" r="16" stroke="#1c5cff" strokeWidth="2" strokeDasharray="80 20" className="ai-loading-circle" />
+            <path d="M12 18L16 22L24 14" stroke="#1c5cff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4" />
+          </svg>
+        </div>
+        <p className="ai-loading-text">AI 엔진 구동중입니다</p>
+        {showSub && <p className="ai-loading-sub">계약서를 분석하고 있습니다...</p>}
+      </div>
+    </div>
+  )
+}
+
 // ─── 메인 앱 ─────────────────────────────────────────────────────
 function App() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('all')
   const [searchValue, setSearchValue] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [loadingWithSub, setLoadingWithSub] = useState(false)
+
+  const withLoading = useCallback((action: () => void, showSub = false) => {
+    setLoading(true)
+    setLoadingWithSub(showSub)
+    setTimeout(() => { setLoading(false); setLoadingWithSub(false); action() }, 1000)
+  }, [])
 
   return (
-    <>
+    <div style={{ position: 'relative' }}>
+      <AILoadingOverlay visible={loading} showSub={loadingWithSub} />
       {/* 헤더 */}
       <header className="app-header">
         <button className="header-back" aria-label="뒤로가기">
@@ -209,11 +241,11 @@ function App() {
           <ApplicationCard
             key={app.id}
             app={app}
-            onGuide={() => navigate('/guide')}
+            onGuide={() => withLoading(() => navigate('/guide'), true)}
           />
         ))}
       </main>
-    </>
+    </div>
   )
 }
 

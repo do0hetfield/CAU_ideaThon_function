@@ -1,6 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './GuidePage.css'
+
+// ─── AI 로딩 오버레이 ──────────────────────────────────────────────
+const AILoadingOverlay = ({ visible, showSub = false }: { visible: boolean; showSub?: boolean }) => {
+  if (!visible) return null
+  return (
+    <div className="ai-loading-overlay" aria-live="polite">
+      <div className="ai-loading-box">
+        <div className="ai-loading-gauge">
+          <div className="ai-loading-gauge__bar" />
+        </div>
+        <div className="ai-loading-icon">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <circle cx="18" cy="18" r="16" stroke="#1c5cff" strokeWidth="2" strokeDasharray="80 20" className="ai-loading-circle" />
+            <path d="M12 18L16 22L24 14" stroke="#1c5cff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4" />
+          </svg>
+        </div>
+        <p className="ai-loading-text">AI 엔진 구동중입니다</p>
+        {showSub && <p className="ai-loading-sub">계약서를 분석하고 있습니다...</p>}
+      </div>
+    </div>
+  )
+}
 
 // ─── 아이콘 ───────────────────────────────────────────────────────
 const ArrowLeftIcon = () => (
@@ -76,7 +98,7 @@ const CLAUSE_DATA: Record<string, ClauseInfo> = {
 
 const DROP_OPTIONS = Object.keys(CLAUSE_DATA)
 
-// ─── 계약서 본문 (CLAUSE_DATA.original 값과 정확히 일치하는 텍스트 포함) ──
+// ─── 계약서 본문 ──────────────────────────────────────────────────────
 const CONTRACT_BODY = `근로계약서
 사용자(이하 '갑')와 근로자(이하 '을')는 다음과 같이 근로계약을 체결하고 이를 성실히 이행할
 것을 약정한다.
@@ -138,27 +160,59 @@ const CONTRACT_BODY = `근로계약서
 생년월일:
 주소:`
 
-// ─── 수정된 조항 반영 미리보기 컴포넌트 ─────────────────────────
-const ContractPreview = ({
+// ─── 계약서 렌더러: 반영된 조항은 강조 표시, 미리보기 중인 조항은 하이라이트 ──
+const ContractRenderer = ({
   contractText,
-  original,
-  suggested,
+  previewOriginal,
+  previewSuggested,
+  appliedTexts,
 }: {
   contractText: string
-  original: string
-  suggested: string
+  previewOriginal: string
+  previewSuggested: string
+  appliedTexts: string[]   // 이미 반영된 suggested 텍스트 목록
 }) => {
-  if (!original || !suggested || !contractText.includes(original)) {
-    return <>{contractText}</>
+  // 계약서 본문을 세그먼트로 분리하여 렌더링
+  // 우선순위: 미리보기(하이라이트) > 반영된 조항(강조)
+  type Segment = { text: string; type: 'normal' | 'preview' | 'applied' }
+  const segments: Segment[] = []
+
+  let remaining = contractText
+
+  // 미리보기 중인 조항 처리
+  if (previewOriginal && previewSuggested && remaining.includes(previewOriginal)) {
+    const idx = remaining.indexOf(previewOriginal)
+    segments.push({ text: remaining.slice(0, idx), type: 'normal' })
+    segments.push({ text: previewSuggested, type: 'preview' })
+    remaining = remaining.slice(idx + previewOriginal.length)
   }
-  const idx = contractText.indexOf(original)
-  const before = contractText.slice(0, idx)
-  const after = contractText.slice(idx + original.length)
+
+  // 나머지 텍스트에서 반영된 조항 강조 처리
+  let workingText = remaining
+  const resultSegments: Segment[] = []
+
+  for (const appliedText of appliedTexts) {
+    if (!workingText.includes(appliedText)) continue
+    const idx = workingText.indexOf(appliedText)
+    if (idx > 0) resultSegments.push({ text: workingText.slice(0, idx), type: 'normal' })
+    resultSegments.push({ text: appliedText, type: 'applied' })
+    workingText = workingText.slice(idx + appliedText.length)
+  }
+  resultSegments.push({ text: workingText, type: 'normal' })
+
+  const allSegments = [...segments, ...resultSegments]
+
   return (
     <>
-      {before}
-      <mark className="preview-replaced">{suggested}</mark>
-      {after}
+      {allSegments.map((seg, i) => {
+        if (seg.type === 'preview') {
+          return <mark key={i} className="preview-replaced">{seg.text}</mark>
+        }
+        if (seg.type === 'applied') {
+          return <strong key={i} className="applied-emphasis">{seg.text}</strong>
+        }
+        return <span key={i}>{seg.text}</span>
+      })}
     </>
   )
 }
@@ -169,11 +223,16 @@ export default function GuidePage() {
   const [dropOpen, setDropOpen] = useState(false)
   const [selected, setSelected] = useState('문제 조항 선택')
   const [expandDoc, setExpandDoc] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [currentContract, setCurrentContract] = useState(() => {
     return sessionStorage.getItem('contract_body') || CONTRACT_BODY
   })
   const [appliedClauses, setAppliedClauses] = useState<string[]>(() => {
     const saved = sessionStorage.getItem('applied_clauses')
+    return saved ? JSON.parse(saved) : []
+  })
+  const [appliedSuggestedTexts, setAppliedSuggestedTexts] = useState<string[]>(() => {
+    const saved = sessionStorage.getItem('applied_suggested_texts')
     return saved ? JSON.parse(saved) : []
   })
 
@@ -186,24 +245,45 @@ export default function GuidePage() {
     sessionStorage.setItem('applied_clauses', JSON.stringify(appliedClauses))
   }, [appliedClauses])
 
+  useEffect(() => {
+    sessionStorage.setItem('applied_suggested_texts', JSON.stringify(appliedSuggestedTexts))
+  }, [appliedSuggestedTexts])
+
   const clauseInfo = CLAUSE_DATA[selected]
   const isAlreadyApplied = appliedClauses.includes(selected)
 
+  // ─── 로딩 후 실행하는 헬퍼 ─────────────────────────────────────
+  const withLoading = useCallback((action: () => void) => {
+    setLoading(true)
+    setTimeout(() => {
+      setLoading(false)
+      action()
+    }, 1000)
+  }, [])
+
+  const handleBack = () => {
+    withLoading(() => navigate(-1))
+  }
+
   const handleApply = () => {
     if (!clauseInfo || isAlreadyApplied) return
-
-    // 반영하기: 현재 계약서에서 원본 조항을 찾아 수정 가이드 내용으로 교체
-    const updated = currentContract.replace(clauseInfo.original, clauseInfo.suggested)
-    setCurrentContract(updated)
-    setAppliedClauses([...appliedClauses, selected])
-    setSelected('문제 조항 선택') // 초기화
-    alert('수정 가이드가 성공적으로 반영되었습니다.')
+    withLoading(() => {
+      const updated = currentContract.replace(clauseInfo.original, clauseInfo.suggested)
+      setCurrentContract(updated)
+      setAppliedClauses(prev => [...prev, selected])
+      setAppliedSuggestedTexts(prev => [...prev, clauseInfo.suggested])
+      setSelected('문제 조항 선택')
+      alert('수정 제안이 성공적으로 요청되었습니다.')
+    })
   }
 
   return (
     <div id="guide-page">
+      {/* AI 로딩 오버레이 */}
+      <AILoadingOverlay visible={loading} />
+
       <header className="app-header">
-        <button className="header-back" onClick={() => navigate(-1)} aria-label="뒤로가기">
+        <button className="header-back" onClick={handleBack} aria-label="뒤로가기">
           <ArrowLeftIcon />
         </button>
         <span className="header-title">수정 가이드 제안</span>
@@ -307,10 +387,11 @@ export default function GuidePage() {
             <div className={`doc-preview ${expandDoc ? 'expanded' : ''}`}>
               <div className="doc-paper">
                 <pre className="doc-paper__body">
-                  <ContractPreview
+                  <ContractRenderer
                     contractText={currentContract}
-                    original={isAlreadyApplied ? '' : (clauseInfo?.original ?? '')}
-                    suggested={isAlreadyApplied ? '' : (clauseInfo?.suggested ?? '')}
+                    previewOriginal={isAlreadyApplied ? '' : (clauseInfo?.original ?? '')}
+                    previewSuggested={isAlreadyApplied ? '' : (clauseInfo?.suggested ?? '')}
+                    appliedTexts={appliedSuggestedTexts}
                   />
                 </pre>
               </div>
@@ -323,7 +404,7 @@ export default function GuidePage() {
             id="apply-guide-btn"
             className={`cta-btn ${(!clauseInfo || isAlreadyApplied) ? 'disabled' : ''}`}
             onClick={handleApply}
-            disabled={!clauseInfo || isAlreadyApplied}
+            disabled={!clauseInfo || isAlreadyApplied || loading}
           >
             {isAlreadyApplied ? '반영 완료' : '수정 제안 보내기'}
           </button>
