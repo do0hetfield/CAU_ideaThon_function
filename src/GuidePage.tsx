@@ -325,7 +325,7 @@ export default function GuidePage() {
             onClick={handleApply}
             disabled={!clauseInfo || isAlreadyApplied}
           >
-            {isAlreadyApplied ? '반영 완료' : '수정 가이드 적용'}
+            {isAlreadyApplied ? '반영 완료' : '수정 제안 보내기'}
           </button>
         </div>
       </main>
