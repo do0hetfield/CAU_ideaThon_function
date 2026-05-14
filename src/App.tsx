@@ -1,17 +1,18 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './App.css'
 
 // ─── 아이콘 컴포넌트 (SVG 인라인) ───────────────────────────────
 const ArrowLeftIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <path d="M15 18L9 12L15 6" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M15 18L9 12L15 6" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 )
 
 const SearchIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle cx="9" cy="9" r="6" stroke="#000000" strokeWidth="1.5"/>
-    <path d="M14 14L18 18" stroke="#000000" strokeWidth="1.5" strokeLinecap="round"/>
+    <circle cx="9" cy="9" r="6" stroke="#000000" strokeWidth="1.5" />
+    <path d="M14 14L18 18" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 )
 
@@ -23,20 +24,20 @@ const CompanyPlaceholder = () => (
     flexShrink: 0,
   }}>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="3" width="18" height="18" rx="2" stroke="#aaaaaa" strokeWidth="1.5"/>
-      <circle cx="8.5" cy="8.5" r="1.5" stroke="#aaaaaa" strokeWidth="1.5"/>
-      <path d="M3 16L8 11L11 14L15 10L21 16" stroke="#aaaaaa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="3" y="3" width="18" height="18" rx="2" stroke="#aaaaaa" strokeWidth="1.5" />
+      <circle cx="8.5" cy="8.5" r="1.5" stroke="#aaaaaa" strokeWidth="1.5" />
+      <path d="M3 16L8 11L11 14L15 10L21 16" stroke="#aaaaaa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   </div>
 )
 
 // ─── 탭 데이터 ───────────────────────────────────────────────────
 const tabs = [
-  { id: 'all',    label: '전체',    count: 1 },
-  { id: 'wait',   label: '승인대기', count: 4 },
-  { id: 'give',   label: '면접포기', count: 4 },
-  { id: 'pass',   label: '합격',    count: 1 },
-  { id: 'fail',   label: '불합격',  count: 1 },
+  { id: 'all', label: '전체', count: 1 },
+  { id: 'wait', label: '승인대기', count: 4 },
+  { id: 'give', label: '면접포기', count: 4 },
+  { id: 'pass', label: '합격', count: 1 },
+  { id: 'fail', label: '불합격', count: 1 },
 ]
 
 // ─── 지원내역 카드 데이터 ─────────────────────────────────────────
@@ -52,7 +53,7 @@ const applications = [
     deadline: '마감 03.24',
     company: '멋쟁이사자처럼 흑석동관',
     jobTitle: '멋쟁이사자처럼 흑석동관 / 기획 멘토',
-    riskScore: '위험도? 92점',
+    riskScore: '위험도 92점',
     buttonLabel: '수정가이드 제안',
     buttonDisabled: false,
     jobTags: null,
@@ -69,7 +70,7 @@ const applications = [
     deadline: '마감 03.24',
     company: '멋쟁이사자처럼 흑석동관',
     jobTitle: '멋쟁이사자처럼 흑석동관 / 기획 멘토',
-    riskScore: '위험도? 92점',
+    riskScore: '위험도 92점',
     buttonLabel: '수정가이드 제안',
     buttonDisabled: true,
     jobTags: ['사무보조', '고객상담'],
@@ -96,7 +97,7 @@ interface Application {
   cardBg: string
 }
 
-const ApplicationCard = ({ app }: { app: Application }) => (
+const ApplicationCard = ({ app, onGuide }: { app: Application; onGuide: () => void }) => (
   <div className="app-card" style={{ backgroundColor: app.cardBg }}>
     {/* 날짜 / 지원방법 */}
     <div className="app-card__meta">
@@ -137,10 +138,11 @@ const ApplicationCard = ({ app }: { app: Application }) => (
       <button
         className="guide-btn"
         disabled={app.buttonDisabled}
+        onClick={app.buttonDisabled ? undefined : onGuide}
         style={{
           backgroundColor: app.buttonDisabled ? '#f0f0f0' : '#ffffff',
           color: '#72767b',
-          borderColor: app.buttonDisabled ? '#e0e0e0' : '#e0e0e0',
+          borderColor: '#e0e0e0',
         }}
       >
         {app.buttonLabel}
@@ -151,6 +153,7 @@ const ApplicationCard = ({ app }: { app: Application }) => (
 
 // ─── 메인 앱 ─────────────────────────────────────────────────────
 function App() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('all')
   const [searchValue, setSearchValue] = useState('')
 
@@ -200,7 +203,11 @@ function App() {
       {/* 지원내역 리스트 */}
       <main className="app-content">
         {applications.map(app => (
-          <ApplicationCard key={app.id} app={app} />
+          <ApplicationCard
+            key={app.id}
+            app={app}
+            onGuide={() => navigate('/guide')}
+          />
         ))}
       </main>
     </>
