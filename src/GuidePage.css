@@ -109,6 +109,13 @@
   font-weight: 600;
 }
 
+/* ─── 조항 컨테이너 ────────────────────────────────────────── */
+.clause-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 /* ─── 수정 가이드 카드 ────────────────────────────────────────── */
 .guide-card {
   background: #ffffff;
@@ -120,26 +127,47 @@
   gap: 12px;
 }
 
+/* 원본 조항 박스 스타일 (동일한 디자인 유지하되 구분 가능하도록) */
+.guide-card.original {
+  border-left: 4px solid #72767b;
+}
+
+/* 수정 가이드 박스 스타일 */
+.guide-card.suggested {
+  border-left: 4px solid #1c5cff;
+}
+
 .guide-card__label {
-  font: 500 16px/19px 'Inter', sans-serif;
+  font: 600 14px/1.2 'Inter', sans-serif;
   color: #72767b;
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.guide-card.suggested .guide-card__label {
+  color: #1c5cff;
 }
 
 .guide-card__body {
   font: 400 14px/1.6 'Inter', sans-serif;
-  color: #ababab;
+  color: #18191a;
   margin: 0;
+  white-space: pre-wrap;
 }
 
 .guide-card__basis {
-  font: 400 14px/17px 'Inter', sans-serif;
-  color: #ababab;
-  margin: 0;
+  font: 400 13px/1.4 'Inter', sans-serif;
+  color: #1c5cff;
+  background: #f0f4ff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin: 4px 0 0;
 }
 
 .guide-card__empty {
   font-style: italic;
+  color: #ababab;
 }
 
 /* ─── 문서 미리보기 ──────────────────────────────────────────── */
@@ -212,11 +240,21 @@
 
 .doc-paper__body {
   font: 500 6.5px/1.6 'Inter', sans-serif;
-  color: #000000;
+  color: #444444;
   white-space: pre-wrap;
   word-break: keep-all;
   margin: 0;
   font-family: 'Inter', sans-serif;
+}
+
+/* ─── 미리보기 하이라이트 ────────────────────────────────────── */
+.preview-highlight {
+  background: #fff9c4; /* 연한 노랑 */
+  color: #000;
+  font-weight: 700;
+  border-bottom: 1px solid #fbc02d;
+  padding: 0 1px;
+  border-radius: 1px;
 }
 
 /* ─── 하단 CTA 버튼 ──────────────────────────────────────────── */
