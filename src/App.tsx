@@ -53,7 +53,7 @@ const applications = [
     deadline: '마감 03.24',
     company: '멋쟁이사자처럼 흑석동관',
     jobTitle: '멋쟁이사자처럼 흑석동관 / 기획 멘토',
-    riskScore: '위험도 92점',
+    riskScore: '안심점수 92점',
     buttonLabel: '수정가이드 제안',
     buttonDisabled: false,
     jobTags: null,
@@ -70,7 +70,7 @@ const applications = [
     deadline: '마감 03.24',
     company: '멋쟁이사자처럼 흑석동관',
     jobTitle: '멋쟁이사자처럼 흑석동관 / 기획 멘토',
-    riskScore: '위험도 92점',
+    riskScore: '안심점수 92점',
     buttonLabel: '수정가이드 제안',
     buttonDisabled: true,
     jobTags: ['사무보조', '고객상담'],
@@ -186,18 +186,21 @@ function App() {
 
       {/* 탭 메뉴 */}
       <nav className="tab-menu">
-        {tabs.map((tab, i) => (
-          <button
-            key={tab.id}
-            className={`tab-item ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-            id={`tab-${tab.id}`}
-          >
-            {i > 0 && <div className="tab-divider" />}
-            <span className="tab-count">{tab.count}</span>
-            <span className="tab-label">{tab.label}</span>
-          </button>
-        ))}
+        {tabs.map((tab, i) => {
+          const isAllTab = tab.id === 'all';
+          return (
+            <button
+              key={tab.id}
+              className={`tab-item ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => isAllTab && setActiveTab(tab.id)}
+              id={`tab-${tab.id}`}
+            >
+              {i > 0 && <div className="tab-divider" />}
+              <span className="tab-count">{tab.count}</span>
+              <span className="tab-label">{tab.label}</span>
+            </button>
+          );
+        })}
       </nav>
 
       {/* 지원내역 리스트 */}

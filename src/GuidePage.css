@@ -108,6 +108,10 @@
   color: #1c5cff;
   font-weight: 600;
 }
+.dropdown-item.applied {
+  color: #ababab;
+  font-style: italic;
+}
 
 /* ─── 조항 컨테이너 ────────────────────────────────────────── */
 .clause-container {
@@ -388,4 +392,12 @@
 }
 .cta-btn:active {
   transform: scale(0.98);
+}
+.cta-btn.disabled {
+  background: #efeff0;
+  color: #ababab;
+  cursor: default;
+}
+.cta-btn.disabled:hover {
+  background: #efeff0;
 }

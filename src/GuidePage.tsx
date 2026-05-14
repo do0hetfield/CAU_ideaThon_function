@@ -169,8 +169,22 @@ export default function GuidePage() {
   const [dropOpen, setDropOpen] = useState(false)
   const [selected, setSelected] = useState('문제 조항 선택')
   const [expandDoc, setExpandDoc] = useState(false)
+  const [currentContract, setCurrentContract] = useState(CONTRACT_BODY)
+  const [appliedClauses, setAppliedClauses] = useState<string[]>([])
 
   const clauseInfo = CLAUSE_DATA[selected]
+  const isAlreadyApplied = appliedClauses.includes(selected)
+
+  const handleApply = () => {
+    if (!clauseInfo || isAlreadyApplied) return
+
+    // 반영하기: 현재 계약서에서 원본 조항을 찾아 수정 가이드 내용으로 교체
+    const updated = currentContract.replace(clauseInfo.original, clauseInfo.suggested)
+    setCurrentContract(updated)
+    setAppliedClauses([...appliedClauses, selected])
+    setSelected('문제 조항 선택') // 초기화
+    alert('수정 가이드가 성공적으로 반영되었습니다.')
+  }
 
   return (
     <div id="guide-page">
@@ -202,15 +216,21 @@ export default function GuidePage() {
             </button>
             {dropOpen && (
               <ul className="dropdown-list" role="listbox">
-                {DROP_OPTIONS.map(opt => (
-                  <li
-                    key={opt}
-                    className={`dropdown-item ${selected === opt ? 'selected' : ''}`}
-                    onClick={() => { setSelected(opt); setDropOpen(false) }}
-                  >
-                    {opt}
-                  </li>
-                ))}
+                {DROP_OPTIONS.map(opt => {
+                  const applied = appliedClauses.includes(opt)
+                  return (
+                    <li
+                      key={opt}
+                      className={`dropdown-item ${selected === opt ? 'selected' : ''} ${applied ? 'applied' : ''}`}
+                      onClick={() => {
+                        setSelected(opt)
+                        setDropOpen(false)
+                      }}
+                    >
+                      {opt} {applied && '(반영됨)'}
+                    </li>
+                  )
+                })}
               </ul>
             )}
           </div>
@@ -222,10 +242,11 @@ export default function GuidePage() {
             <h2 className="section-title">원본 조항</h2>
             <div className="guide-card original">
               <p className="guide-card__label">기존 조항 내용</p>
-              {clauseInfo
-                ? <p className="guide-card__body">{clauseInfo.original}</p>
-                : <p className="guide-card__body guide-card__empty">조항을 선택하면 원본 내용이 표시됩니다.</p>
-              }
+              {clauseInfo ? (
+                <p className="guide-card__body">{isAlreadyApplied ? clauseInfo.suggested : clauseInfo.original}</p>
+              ) : (
+                <p className="guide-card__body guide-card__empty">조항을 선택하면 원본 내용이 표시됩니다.</p>
+              )}
             </div>
           </section>
 
@@ -235,7 +256,7 @@ export default function GuidePage() {
               <p className="guide-card__label">권장 수정 방향</p>
               {clauseInfo ? (
                 <>
-                  <p className="guide-card__body">{clauseInfo.suggested}</p>
+                  <p className="guide-card__body">{isAlreadyApplied ? '이미 반영된 조항입니다.' : clauseInfo.suggested}</p>
                   <p className="guide-card__basis">{clauseInfo.basis}</p>
                 </>
               ) : (
@@ -248,7 +269,7 @@ export default function GuidePage() {
         {/* 수정 결과 미리보기 */}
         <section className="guide-section">
           <h2 className="section-title">수정 결과 미리보기</h2>
-          {clauseInfo && (
+          {clauseInfo && !isAlreadyApplied && (
             <div className="preview-badge">
               <span className="preview-badge__dot" />
               <span>{selected} 수정 내용이 반영되었습니다</span>
@@ -273,9 +294,9 @@ export default function GuidePage() {
               <div className="doc-paper">
                 <pre className="doc-paper__body">
                   <ContractPreview
-                    contractText={CONTRACT_BODY}
-                    original={clauseInfo?.original ?? ''}
-                    suggested={clauseInfo?.suggested ?? ''}
+                    contractText={currentContract}
+                    original={isAlreadyApplied ? '' : (clauseInfo?.original ?? '')}
+                    suggested={isAlreadyApplied ? '' : (clauseInfo?.suggested ?? '')}
                   />
                 </pre>
               </div>
@@ -284,8 +305,13 @@ export default function GuidePage() {
         </section>
 
         <div className="guide-cta">
-          <button id="apply-guide-btn" className="cta-btn">
-            수정 가이드 적용
+          <button
+            id="apply-guide-btn"
+            className={`cta-btn ${(!clauseInfo || isAlreadyApplied) ? 'disabled' : ''}`}
+            onClick={handleApply}
+            disabled={!clauseInfo || isAlreadyApplied}
+          >
+            {isAlreadyApplied ? '반영 완료' : '수정 가이드 적용'}
           </button>
         </div>
       </main>
