@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './GuidePage.css'
 
@@ -169,8 +169,22 @@ export default function GuidePage() {
   const [dropOpen, setDropOpen] = useState(false)
   const [selected, setSelected] = useState('문제 조항 선택')
   const [expandDoc, setExpandDoc] = useState(false)
-  const [currentContract, setCurrentContract] = useState(CONTRACT_BODY)
-  const [appliedClauses, setAppliedClauses] = useState<string[]>([])
+  const [currentContract, setCurrentContract] = useState(() => {
+    return sessionStorage.getItem('contract_body') || CONTRACT_BODY
+  })
+  const [appliedClauses, setAppliedClauses] = useState<string[]>(() => {
+    const saved = sessionStorage.getItem('applied_clauses')
+    return saved ? JSON.parse(saved) : []
+  })
+
+  // 상태 변경 시 sessionStorage에 자동 저장
+  useEffect(() => {
+    sessionStorage.setItem('contract_body', currentContract)
+  }, [currentContract])
+
+  useEffect(() => {
+    sessionStorage.setItem('applied_clauses', JSON.stringify(appliedClauses))
+  }, [appliedClauses])
 
   const clauseInfo = CLAUSE_DATA[selected]
   const isAlreadyApplied = appliedClauses.includes(selected)
