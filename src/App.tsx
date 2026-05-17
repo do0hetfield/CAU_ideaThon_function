@@ -72,7 +72,7 @@ const applications = [
     riskScore: '안심점수 92점',
     buttonLabel: '수정가이드 제안',
     buttonDisabled: true,
-    jobTags: ['사무보조', '고객상담'] as string[],
+    jobTags: null as string[] | null,
     cardVariant: 'canceled' as const,
   },
 ]
@@ -234,7 +234,7 @@ function App() {
           <ApplicationCard
             key={app.id}
             app={app}
-            onGuide={() => withLoading(() => navigate('/guide'), true)}
+            onGuide={() => navigate('/guide')}
           />
         ))}
       </main>

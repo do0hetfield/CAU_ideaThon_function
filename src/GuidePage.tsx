@@ -262,19 +262,17 @@ export default function GuidePage() {
   }, [])
 
   const handleBack = () => {
-    withLoading(() => navigate(-1))
+    navigate(-1)
   }
 
   const handleApply = () => {
     if (!clauseInfo || isAlreadyApplied) return
-    withLoading(() => {
-      const updated = currentContract.replace(clauseInfo.original, clauseInfo.suggested)
-      setCurrentContract(updated)
-      setAppliedClauses(prev => [...prev, selected])
-      setAppliedSuggestedTexts(prev => [...prev, clauseInfo.suggested])
-      setSelected('문제 조항 선택')
-      alert('수정 제안이 성공적으로 요청되었습니다.')
-    })
+    const updated = currentContract.replace(clauseInfo.original, clauseInfo.suggested)
+    setCurrentContract(updated)
+    setAppliedClauses(prev => [...prev, selected])
+    setAppliedSuggestedTexts(prev => [...prev, clauseInfo.suggested])
+    setSelected('문제 조항 선택')
+    alert('수정 제안이 성공적으로 요청되었습니다.')
   }
 
   return (
@@ -317,8 +315,10 @@ export default function GuidePage() {
                       key={opt}
                       className={`dropdown-item ${selected === opt ? 'selected' : ''} ${applied ? 'applied' : ''}`}
                       onClick={() => {
-                        setSelected(opt)
                         setDropOpen(false)
+                        withLoading(() => {
+                          setSelected(opt)
+                        })
                       }}
                     >
                       {opt} {applied && '(반영됨)'}
