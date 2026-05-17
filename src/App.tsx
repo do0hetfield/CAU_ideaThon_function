@@ -6,7 +6,8 @@ import './GuidePage.css'
 // ─── 아이콘 컴포넌트 (SVG 인라인) ───────────────────────────────
 const ArrowLeftIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <path d="M15 18L9 12L15 6" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    {/* Figma: Stroke 1 (가로) + Stroke 3 (꺾임) */}
+    <polyline points="15,6 9,12 15,18" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
   </svg>
 )
 
@@ -21,6 +22,7 @@ const CompanyPlaceholder = () => (
   <div style={{
     width: 36, height: 36, borderRadius: '50%',
     backgroundColor: '#efeff0',
+    border: '0.72px solid #aeb0b6',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   }}>
@@ -34,10 +36,10 @@ const CompanyPlaceholder = () => (
 
 // ─── 탭 데이터 ───────────────────────────────────────────────────
 const tabs = [
-  { id: 'all', label: '전체', count: 1 },
+  { id: 'all',  label: '전체',   count: 1 },
   { id: 'wait', label: '승인대기', count: 4 },
   { id: 'give', label: '면접포기', count: 4 },
-  { id: 'pass', label: '합격', count: 1 },
+  { id: 'pass', label: '합격',   count: 1 },
   { id: 'fail', label: '불합격', count: 1 },
 ]
 
@@ -47,35 +49,31 @@ const applications = [
     id: 1,
     date: '2026.03.24',
     method: '온라인지원',
-    status: 'read',         // 'read' | 'unread'
-    tag: '열람 03.25',
-    tagColor: '#000000',
-    tagBg: '#ffffff',
+    tagLabel: '열람 03.25',
+    tagVariant: 'read' as const,   // 'read' | 'cancel'
     deadline: '마감 03.24',
     company: '멋쟁이사자처럼 흑석동관',
     jobTitle: '멋쟁이사자처럼 흑석동관 / 기획 멘토',
     riskScore: '안심점수 92점',
     buttonLabel: '수정가이드 제안',
     buttonDisabled: false,
-    jobTags: null,
-    cardBg: '#ffffff',
+    jobTags: null as string[] | null,
+    cardVariant: 'normal' as const,
   },
   {
     id: 2,
     date: '2026.03.24',
     method: '온라인지원',
-    status: 'unread',
-    tag: '지원취소',
-    tagColor: '#ababab',
-    tagBg: '#f0f0f0',
+    tagLabel: '지원취소',
+    tagVariant: 'cancel' as const,
     deadline: '마감 03.24',
     company: '멋쟁이사자처럼 흑석동관',
     jobTitle: '멋쟁이사자처럼 흑석동관 / 기획 멘토',
     riskScore: '안심점수 92점',
     buttonLabel: '수정가이드 제안',
     buttonDisabled: true,
-    jobTags: ['사무보조', '고객상담'],
-    cardBg: '#f0f0f0',
+    jobTags: ['사무보조', '고객상담'] as string[],
+    cardVariant: 'canceled' as const,
   },
 ]
 
@@ -84,10 +82,8 @@ interface Application {
   id: number
   date: string
   method: string
-  status: string
-  tag: string
-  tagColor: string
-  tagBg: string
+  tagLabel: string
+  tagVariant: 'read' | 'cancel'
   deadline: string
   company: string
   jobTitle: string
@@ -95,11 +91,12 @@ interface Application {
   buttonLabel: string
   buttonDisabled: boolean
   jobTags: string[] | null
-  cardBg: string
+  cardVariant: 'normal' | 'canceled'
 }
 
 const ApplicationCard = ({ app, onGuide }: { app: Application; onGuide: () => void }) => (
-  <div className="app-card" style={{ backgroundColor: app.cardBg }}>
+  <div className={`app-card${app.cardVariant === 'canceled' ? ' app-card--canceled' : ''}`}>
+
     {/* 날짜 / 지원방법 */}
     <div className="app-card__meta">
       <span className="meta-date">{app.date}</span>
@@ -109,42 +106,37 @@ const ApplicationCard = ({ app, onGuide }: { app: Application; onGuide: () => vo
 
     {/* 태그 + 마감 */}
     <div className="app-card__tags">
-      <span className="tag" style={{ color: app.tagColor, backgroundColor: app.tagBg, borderColor: app.tagBg === '#ffffff' ? '#e0e0e0' : app.tagBg }}>
-        {app.tag}
+      <span className={`tag tag--${app.tagVariant}`}>
+        {app.tagLabel}
       </span>
       <span className="deadline">{app.deadline}</span>
     </div>
 
-    {/* 회사 정보 */}
-    <div className="app-card__company">
-      <div className="company-left">
+    {/* 회사 정보 + 직무명 */}
+    <div className="app-card__company-row">
+      <div className="app-card__company">
         <CompanyPlaceholder />
         <span className="company-name">{app.company}</span>
       </div>
+      <div className="app-card__jobtitle">{app.jobTitle}</div>
+
+      {/* 직종 태그 (지원취소 카드에만) */}
+      {app.jobTags && (
+        <div className="app-card__jobtags">
+          {app.jobTags.map((t: string) => (
+            <span key={t} className="tag tag--job">{t}</span>
+          ))}
+        </div>
+      )}
     </div>
-    <div className="app-card__jobtitle">{app.jobTitle}</div>
 
-    {/* 직종 태그 (열람전에만) */}
-    {app.jobTags && (
-      <div className="app-card__jobtags">
-        {app.jobTags.map((t: string) => (
-          <span key={t} className="tag" style={{ color: '#ababab', backgroundColor: '#f0f0f0', borderColor: '#f0f0f0' }}>{t}</span>
-        ))}
-      </div>
-    )}
-
-    {/* 하단: 위험도 + 버튼 */}
+    {/* 하단: 안심점수 + 버튼 */}
     <div className="app-card__bottom">
       <span className="risk-score">{app.riskScore}</span>
       <button
-        className="guide-btn"
+        className={`guide-btn${app.buttonDisabled ? ' guide-btn--disabled' : ''}`}
         disabled={app.buttonDisabled}
         onClick={app.buttonDisabled ? undefined : onGuide}
-        style={{
-          backgroundColor: app.buttonDisabled ? '#f0f0f0' : '#ffffff',
-          color: '#72767b',
-          borderColor: '#e0e0e0',
-        }}
       >
         {app.buttonLabel}
       </button>
@@ -152,7 +144,7 @@ const ApplicationCard = ({ app, onGuide }: { app: Application; onGuide: () => vo
   </div>
 )
 
-// ─── AI 로딩 오버레이 (GuidePage.css 클래스 공용) ────────────────
+// ─── AI 로딩 오버레이 (GuidePage.css 공용) ─────────────────────
 const AILoadingOverlay = ({ visible, showSub = false }: { visible: boolean; showSub?: boolean }) => {
   if (!visible) return null
   return (
@@ -191,6 +183,7 @@ function App() {
   return (
     <div style={{ position: 'relative' }}>
       <AILoadingOverlay visible={loading} showSub={loadingWithSub} />
+
       {/* 헤더 */}
       <header className="app-header">
         <button className="header-back" aria-label="뒤로가기">
@@ -219,11 +212,11 @@ function App() {
       {/* 탭 메뉴 */}
       <nav className="tab-menu">
         {tabs.map((tab, i) => {
-          const isAllTab = tab.id === 'all';
+          const isAllTab = tab.id === 'all'
           return (
             <button
               key={tab.id}
-              className={`tab-item ${activeTab === tab.id ? 'active' : ''}`}
+              className={`tab-item${activeTab === tab.id ? ' active' : ''}`}
               onClick={() => isAllTab && setActiveTab(tab.id)}
               id={`tab-${tab.id}`}
             >
@@ -231,7 +224,7 @@ function App() {
               <span className="tab-count">{tab.count}</span>
               <span className="tab-label">{tab.label}</span>
             </button>
-          );
+          )
         })}
       </nav>
 
